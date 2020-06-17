@@ -13,11 +13,8 @@
 """
 
 import json
-import numpy as np
-import pathlib
 import os
 import matplotlib.pyplot as plt
-import cv2
 
 from PIL import Image
 from pprint import pprint as pp
