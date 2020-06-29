@@ -41,6 +41,11 @@ def finding_image_value(images_list):
 
 
 def finding_labels_value(labels_list):
+    """
+    finding valid value in label dictionary
+    :param labels_list: labels_list[{'image id': , 'attribues':{'class': character, word }, 'text': }]
+    :returns: labels_dict{'image id':{'text' : [bbox coordinate]}}
+    """
     labels_dict = {}
 
     for label_dict in labels_list:
@@ -54,10 +59,10 @@ def finding_labels_value(labels_list):
 
             is_not_ko = False
 
-            # 두 글자로 잘못 되있는 레이블링 제외
+            # except for invalid length label
             if len(text) > 1:
                 continue
-            # 한글 외 글자 제외
+            # except for not Korean characters
             for character in 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890.,./\?<>~!@#$%^&*()_+-=;:` "''':
                 if text == character:
                     is_not_ko = True
@@ -68,8 +73,7 @@ def finding_labels_value(labels_list):
             bbox = label_dict['bbox']
             labels_dict[image_id][text] = bbox
 
-    # == == == == == == == == == == == == == == == == == == == == == == ==
-    # 공 value 제거
+    # remove blank value
     key_list = []
     for key, value in labels_dict.items():
         if value == {}:
@@ -77,7 +81,6 @@ def finding_labels_value(labels_list):
 
     for key in key_list:
         del labels_dict[key]
-    # == == == == == == == == == == == == == == == == == == == == == == ==
 
     # pp(labels_dict)
     return labels_dict
@@ -125,6 +128,15 @@ def finding_path(image_dict, input_path):
 
     for image_id, path_list in image_dict.items():
         image_type = path_list[0]
+
+        # match type name to input,output image folder name
+        if image_type == 'product':
+            image_type = 'Goods'
+        elif image_type == 'sign':
+            image_type = 'Signboard'
+        elif image_type == 'traffic sign':
+            image_type = 'Traffic_Sign'
+
         file_name = path_list[1]
 
         file_path = os.path.join(input_path, image_type, file_name)
@@ -167,6 +179,8 @@ def images_crop(path_dict, label_dict, output_path):
             for i in bbox_coordinate:
                 if i < 0:
                     i *= -1
+                elif i == 0:    # invalid h,w size changed to greater than 0
+                    i = 1
                 coordinate.append(i)
 
             left = coordinate[0]
