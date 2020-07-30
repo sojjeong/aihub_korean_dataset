@@ -7,7 +7,6 @@ import argparse
 from PIL import Image
 from pprint import pprint as pp
 
-
 parser = argparse.ArgumentParser()
 parser.add_argument('--input_json_dir', '-inJson', type=str, help='input json directory')
 parser.add_argument('--input_img_dir', '-inImg', type=str, help='input image directory, before mode')
@@ -18,28 +17,33 @@ parser.add_argument('--name', '-n', type=int, default=0, help='select naming opt
 opt = parser.parse_args()
 
 
-def json_open(path):
+def json_open(json_dir, img_dir):
     """
-    json file open
-    :param path: input json path
-    :return: image dictionary, annotation dictionary
+    - json file open
+    - image file name read
+    :param path: input json dir, input image dir
+    :return: image_data_list, label_data_list, image name list
     """
-    with open(path, 'rt', encoding='UTF8') as f:
+    with open(json_dir, 'rt', encoding='UTF8') as f:
         data = json.load(f)
-        image_dict = data['images']
-        label_dict = data['annotations']
+        image_data_list = data['images']
+        label_data_list = data['annotations']
 
-    return image_dict, label_dict
+    image_name_list = os.listdir(img_dir)
+
+    return image_data_list, label_data_list, image_name_list
 
 
-def finding_image_value(images_list):
+def finding_image_value(image_data_list, image_name_list):
     """
     :param images_list:
     :return: {'image_id':['type', file_name']}
     """
+
+    """
     file_dict = {}
 
-    for image_dict in images_list:
+    for image_dict in image_data_list:
         image_id = image_dict['id']
         file_name = image_dict['file_name']
         image_type = image_dict['type']
@@ -48,6 +52,10 @@ def finding_image_value(images_list):
 
     # pp(file_dict)
     return file_dict
+    """
+
+    valid_image_list = []
+    valid_image_id = []
 
 
 def finding_labels_value(labels_list):
@@ -63,25 +71,23 @@ def finding_labels_value(labels_list):
         labels_dict[image_id] = {}
 
     for label_dict in labels_list:
-        if label_dict['attributes']['class'] == 'character':
-            image_id = label_dict['image_id']
-            text = label_dict['text']
+        image_id = label_dict['image_id']
+        text = label_dict['text']
 
+        if label_dict['attributes']['class'] == 'character':
             is_not_ko = False
 
-            # except for invalid length label
-            if len(text) > 1:
-                continue
-            # except for not Korean characters
-            for character in 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890.,./\?<>~!@#$%^&*()_+-=;:` "''':
+            # except for not characters
+            for character in '.,./\?<>~!@#$%^&*()_+-=;:` "''':
                 if text == character:
                     is_not_ko = True
 
-            if is_not_ko:
+            # except for invalid length label and not character
+            if is_not_ko or len(text) > 1:
                 continue
 
-            bbox = label_dict['bbox']
-            labels_dict[image_id][text] = bbox
+        bbox = label_dict['bbox']
+        labels_dict[image_id][text] = bbox
 
     # remove blank value
     key_list = []
@@ -171,8 +177,6 @@ def images_crop(path_dict, label_dict, output_path):
     :param output_path : output path for storing cropped image
     :return:
     """
-
-
     for image_id, path in path_dict.items():
         is_file_exists = os.path.isfile(path)
         if is_file_exists is False:
@@ -217,10 +221,10 @@ def imshow(image):
 
 
 def main(opt):
-    image_dict, label_dict = json_open(path=opt.input_json_dir)
+    image_data_list, label_data_list, image_name_list = json_open(json_dir=opt.input_json_dir, img_dir=opt.input_img_dir)
 
-    valid_images_dict = finding_image_value(image_dict)
-    valid_labels_dict = finding_labels_value(label_dict)
+    valid_images_dict = finding_image_value(image_data_list, image_name_list)
+    valid_labels_dict = finding_labels_value(label_data_list)
 
     valid_images_dict, valid_labels_dict = dict_compare(valid_images_dict, valid_labels_dict)
     path_dict = finding_path(valid_images_dict, opt.input_img_dir)

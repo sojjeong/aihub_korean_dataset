@@ -2,7 +2,7 @@ image[0]['id'] = 아이디
 image[0]['type'] = book
 image[0]['file_name'] = 파일 이름
 
-label[0]['id] = 이미지 네 글자 아이디
+label[0]['id] = 이미지 안에 존재하는 글자에 붙혀지는 아이디
 label[0]['image_id'] = 매칭할 이미지 아이디
 label[0]['text'] = 글자
 label[0]['attribute']['class'] = character, word
