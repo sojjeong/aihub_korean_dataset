@@ -5,14 +5,14 @@ import matplotlib.pyplot as plt
 import argparse
 
 from PIL import Image
-from pprint import pprint as pp
+# from pprint import pprint as pp
 
 parser = argparse.ArgumentParser()
 parser.add_argument('--input_json_dir', '-inJson', type=str, help='input json directory')
 parser.add_argument('--input_img_dir', '-inImg', type=str, help='input image directory, before mode')
 parser.add_argument('--output_dir', '-out', type=str, help='output image directory')
-parser.add_argument('--unit', '-u', type=str, default='char', help='select character or word for cropping')
-parser.add_argument('--name', '-n', type=int, default=0, help='select naming option [0:id_gt, 1:gt_id]')
+parser.add_argument('--unit', '-u', type=int, default=0, help='select text unit option[0:character,1:word,2:both text]')
+parser.add_argument('--name', '-n', type=int, default=0, help='select naming option[0:id_gt, 1:gt_id]')
 
 opt = parser.parse_args()
 
@@ -34,103 +34,80 @@ def json_open(json_dir, img_dir):
     return image_data_list, label_data_list, image_name_list
 
 
-def finding_image_value(image_data_list, image_name_list):
+def finding_valid_image(image_data_list, image_name_list):
     """
-    :param images_list:
-    :return: {'image_id':['type', file_name']}
+    :param image_data_list: image data list
+    :param image_name_list: image name list in input image dir
+    :return: {'image_id': 'file_name'}
     """
+    reverse_dict = {}
+    image_dict = {}
 
+    for i in range(len(image_data_list)):
+        file_name = image_data_list[i]['file_name']
+        image_id = image_data_list[i]['id']
+
+        if image_data_list[i]['file_name'] in image_name_list:
+            # 다른 아이디로 중복된 파일 이름이 존재함
+            # 파일 이름을 key 로 사용해 중복 제거
+            reverse_dict[file_name] = image_id
+
+    # 관리를 위해 id : file_name 으로 변경
+    for key, val in reverse_dict.items():
+        image_dict[val] = key
+
+    return image_dict
+
+
+def finding_valid_label(label_data_list, image_dict):
     """
-    file_dict = {}
-
-    for image_dict in image_data_list:
-        image_id = image_dict['id']
-        file_name = image_dict['file_name']
-        image_type = image_dict['type']
-
-        file_dict[image_id] = [image_type, file_name]
-
-    # pp(file_dict)
-    return file_dict
+    finding label which has same image id in image_dict
+    :param label_data_list:[{'id': , 'image_id': , 'attribues':{'class': character, word }, 'text': , 'bbox':[x,y coordinate]}]
+    :param image_dict: {image_id:file_name}
+    :return: labels_dict{'image id':[{id: , 'text':[bbox coordinate]}, {id: , 'text':[bbox coordinate]}....]}
     """
+    valid_dict = {}
 
-    valid_image_list = []
-    valid_image_id = []
+    # make blank list in the dictionary
+    for key in image_dict:
+        valid_dict[key] = []
 
+    # search the same image_id
+    for dict in label_data_list:
+        image_id = dict['image_id']
 
-def finding_labels_value(labels_list):
-    """
-    finding valid value in label dictionary
-    :param labels_list: labels_list[{'image id': , 'attribues':{'class': character, word }, 'text': }]
-    :returns: labels_dict{'image id':{'text' : [bbox coordinate]}}
-    """
-    labels_dict = {}
+        # default label text unit option
+        unit_option = 0
 
-    for label_dict in labels_list:
-        image_id = label_dict['image_id']
-        labels_dict[image_id] = {}
+        if dict['attributes']['class'] == 'character':
+            unit_option = 0
+        elif dict['attributes']['class'] == 'word':
+            unit_option = 1
 
-    for label_dict in labels_list:
-        image_id = label_dict['image_id']
-        text = label_dict['text']
+        if opt.unit == 2:
+            unit_option = 2
 
-        if label_dict['attributes']['class'] == 'character':
-            is_not_ko = False
+        if opt.unit == unit_option:
+            if image_id in image_dict:
+                temp_dict = {}
+                text = dict['text']
 
-            # except for not characters
-            for character in '.,./\?<>~!@#$%^&*()_+-=;:` "''':
-                if text == character:
-                    is_not_ko = True
+                # except for not characters
+                is_not_ko = False
+                for character in '.,./\?<>~!@#$%^&*()_+-=;:` "''':
+                    if text == character:
+                        is_not_ko = True
 
-            # except for invalid length label and not character
-            if is_not_ko or len(text) > 1:
-                continue
+                # except for invalid length label and not character
+                if is_not_ko or len(text) > 1:
+                    continue
 
-        bbox = label_dict['bbox']
-        labels_dict[image_id][text] = bbox
+                temp_dict['id'] = dict['id']
+                temp_dict[text] = dict['bbox']
 
-    # remove blank value
-    key_list = []
-    for key, value in labels_dict.items():
-        if value == {}:
-            key_list.append(key)
+                valid_dict[image_id].append(temp_dict)
 
-    for key in key_list:
-        del labels_dict[key]
-
-    # pp(labels_dict)
-    return labels_dict
-
-
-def dict_compare(image_dict, label_dict):
-    """
-    dictionary compare for removing invalid file
-    :param image_dict:
-    :param label_dict:
-    :return: image_dict, label_dict
-    """
-
-    remove_image_keylist = []
-    remove_labels_keylist = []
-
-    for key in label_dict.keys():
-        if not image_dict.get(key):
-            remove_image_keylist.append(key)
-
-    for key in image_dict.keys():
-        if not label_dict.get(key):
-            remove_labels_keylist.append(key)
-
-    # labels_key delete
-    for key in remove_image_keylist:
-        del label_dict[key]
-
-    # images_key delete
-    for key in remove_labels_keylist:
-        del image_dict[key]
-
-    # print(len(images_dict), len(labels_dict))
-    return image_dict, label_dict
+    return valid_dict
 
 
 def finding_path(image_dict, input_path):
@@ -223,13 +200,9 @@ def imshow(image):
 def main(opt):
     image_data_list, label_data_list, image_name_list = json_open(json_dir=opt.input_json_dir, img_dir=opt.input_img_dir)
 
-    valid_images_dict = finding_image_value(image_data_list, image_name_list)
-    valid_labels_dict = finding_labels_value(label_data_list)
-
-    valid_images_dict, valid_labels_dict = dict_compare(valid_images_dict, valid_labels_dict)
-    path_dict = finding_path(valid_images_dict, opt.input_img_dir)
-    images_crop(path_dict, valid_labels_dict, opt.output_dir)
+    valid_image_dict = finding_valid_image(image_data_list, image_name_list)
+    valid_labels_dict = finding_valid_label(label_data_list, valid_image_dict)
 
 
-if __name__ == "__main__":1
+if __name__ == "__main__":
     main(opt)
