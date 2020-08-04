@@ -30,4 +30,10 @@
 - output : 텍스트 이미지 파일 `ImageID_text_ID_text.jpg or text_ImageID_textID.jpg`
 
 # Usage
-- `python json_crop.py --input_json_dir=[json path] \ --input_img_dir=[input image path] \ --output_dir=[cropping image path] \ --unit=[unit option 0:character, 1:word, 2:both] \ --name=[naimng option 0:ImageID_text_ID_text, 1:text_ImageID_textID]`
+'''
+python json_crop.py --input_json_dir=[json path] \
+--input_img_dir=[input image path] \
+--output_dir=[cropping image path] \
+--unit=[unit option 0:character, 1:word, 2:both] \ 
+--name=[naimng option 0:ImageID_text_ID_text, 1:text_ImageID_textID]
+'''
