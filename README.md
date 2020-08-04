@@ -32,8 +32,8 @@
 # Usage
 <pre><code>
 python json_crop.py --input_json_dir=[json path] \
---input_img_dir=[input image path] \
---output_dir=[cropping image path] \
---unit=[unit option 0:character, 1:word, 2:both] \ 
---name=[naimng option 0:ImageID_text_ID_text, 1:text_ImageID_textID]
+                    --input_img_dir=[input image path] \
+                    --output_dir=[cropping image path] \
+                    --unit=[unit option 0:character, 1:word, 2:both] \ 
+                    --name=[naimng option 0:ImageID_text_ID_text, 1:text_ImageID_textID]
 </code></pre>
