@@ -27,7 +27,7 @@
 
 # Data
 - input : 이미지, 레이블에 해당하는 json 파일
-- output : 텍스트 이미지 파일 `ImageID_text_ID_text.jpg or text_ImageID_textID.jpg`
+- output : 텍스트 이미지 파일 `ImageID_TextID_GT.jpg or GT_ImageID_TextID.jpg`
 - json 파일 내 정답이 아예 잘못된 경우에 대해서는 예외처리하지 못했기 때문에 (ex:'젊'이란 글자에 '젋'이라고 레이블링이 되어 있는 경우) 직접 검수하셔야 합니다.
 
 # Usage
