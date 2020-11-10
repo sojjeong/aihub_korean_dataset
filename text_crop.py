@@ -1,4 +1,10 @@
 #-*- coding:utf-8 -*-
+#############################################
+# <date> : 2020.11.05(modify)
+# <description> 
+# aihub에서 제공하는 한국어 글자체 이미지 데이터셋 재가공
+# text recognition model 훈련을 위해 raw data로부터 문자, 단어 단위로 image crop
+#############################################
 import json
 import os
 import matplotlib.pyplot as plt
@@ -6,9 +12,9 @@ import argparse
 from PIL import Image
 
 parser = argparse.ArgumentParser()
-parser.add_argument('--input_json_dir', '-inJson', type=str, default='data/textinthewild_data_info.json', help='input json directory')
-parser.add_argument('--input_img_dir', '-inImg', type=str, default='data/book', help='input image directory, before mode')
-parser.add_argument('--output_dir', '-out', type=str, default='data/crop_results', help='output image directory')
+parser.add_argument('--input_json_dir', '-inJson', type=str, default='textinthewild_data_info.json', help='input json directory')
+parser.add_argument('--input_img_dir', '-inImg', type=str, default='images/', help='input image directory, before mode')
+parser.add_argument('--output_dir', '-out', type=str, default='output/', help='output image directory')
 parser.add_argument('--unit', '-u', type=int, default=0, help='select text unit option[0:character,1:word,2:both text]')
 parser.add_argument('--name', '-n', type=int, default=1, help='select naming option[0:id_textId_gt, 1:gt_id_textId]')
 
