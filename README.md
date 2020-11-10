@@ -10,6 +10,7 @@
 - 2020.06.19 parser argument 추가
 - 2020.06.29 잘못된 레이블에 대한 예외 처리 추가, json 파일 내 type을 input, output 폴더명과 같도록 매칭
 - 2020.08.04 유효 레이블 재구성하는 딕셔너리 형태 변경, 한글,영어,숫자 가능, 기호나 한글 모음 자음으로 분리된 잘못된 레이블 예외처리 추가, crop 시 생기는 사이즈 에러 예외처리 추가
+- 2020.11.10 가로 세로 비율에 따라 이미지 분류하는 코드 ratio_classification.py 추가, 각 파일 별 description 추가
 
 # Purpose 
 - 이미지파일이 없는 경우 발생
@@ -37,4 +38,5 @@ python text_crop.py --input_json_dir=[json path] \
                     --output_dir=[cropping image path] \
                     --unit=[unit option 0:character, 1:word, 2:both] \ 
                     --name=[naimng option 0:ImageID_TextID_GT, 1:GT_ImageID_TextID]
+
 </code></pre>
